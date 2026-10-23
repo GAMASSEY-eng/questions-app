@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Let's Talk"><meta name="theme-color" content="#ff7a45">
+<link rel="apple-touch-icon" href="icon-180.png"><link rel="manifest" href="manifest.json">
+<title>Let's Talk</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(160deg,#ffb36b,#ff7a45 55%,#e8505b);color:#2b1a12;
+padding:calc(env(safe-area-inset-top) + 14px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 16px) calc(env(safe-area-inset-left) + 16px);display:flex;flex-direction:column;min-height:100dvh}
+h1{color:#fff;text-align:center;font-size:24px;margin:4px 0 2px;font-weight:800}
+p.sub{color:#fff8;text-align:center;margin:0 0 12px;font-size:16px;color:rgba(255,255,255,.9)}
+#cards{flex:1;display:flex;flex-direction:column;gap:12px}
+.card{flex:1;background:#fffaf3;border-radius:22px;padding:16px 18px;font-size:22px;line-height:1.3;font-weight:700;border:0;text-align:left;color:#2b1a12;box-shadow:0 6px 18px rgba(80,20,0,.25);display:flex;align-items:center;font-family:inherit;transition:transform .15s}
+.card:active{transform:scale(.97)}
+.card .n{flex:none;width:38px;height:38px;border-radius:50%;background:#ff7a45;color:#fff;display:grid;place-items:center;margin-right:14px;font-size:20px}
+#new{margin-top:14px;padding:18px;font-size:22px;font-weight:800;border:0;border-radius:22px;background:#2b1a12;color:#fff;font-family:inherit}
+#big{position:fixed;inset:0;background:#fffaf3;display:none;flex-direction:column;justify-content:center;padding:calc(env(safe-area-inset-top) + 30px) 28px calc(env(safe-area-inset-bottom) + 30px)}
+#big.on{display:flex}#bigq{font-size:34px;line-height:1.3;font-weight:800;flex:1;display:flex;align-items:center}
+#back{padding:18px;font-size:20px;font-weight:800;border:0;border-radius:22px;background:#ff7a45;color:#fff;font-family:inherit}
+</style></head><body>
+<h1>Let's Talk 💬</h1><p class="sub">Pick the question you'd like to answer</p>
+<div id="cards"></div><button id="new">🎲 New questions</button>
+<div id="big"><div id="bigq"></div><button id="back">← Back to choices</button></div>
+<script src="questions.js"></script>
+<script>
+const Q=QUESTIONS.map(x=>typeof x==="string"?{q:x,g:""}:x);
+let deck=[];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function deal(){
+  const pick=[],groups=new Set();
+  for(let pass=0;pass<2&&pick.length<3;pass++){
+    if(pass===1)deck=deck.concat(shuffle(Q.map((_,i)=>i).filter(i=>!pick.includes(i))));
+    for(let k=0;k<deck.length&&pick.length<3;){const i=deck[k],g=Q[i].g;
+      if(!pick.includes(i)&&!(g&&groups.has(g))){pick.push(i);if(g)groups.add(g);deck.splice(k,1)}else k++}
+  }
+  // drop leftover partners of shown groups to the end so they don't come up soon
+  const c=document.getElementById('cards');c.innerHTML='';
+  pick.forEach((i,n)=>{const b=document.createElement('button');b.className='card';
+    b.innerHTML='<span class="n">'+(n+1)+'</span><span></span>';b.lastChild.textContent=Q[i].q;
+    b.onclick=()=>{bigq.textContent=Q[i].q;big.classList.add('on')};c.appendChild(b)});
+}
+deck=shuffle(Q.map((_,i)=>i));
+document.getElementById('new').onclick=deal;back.onclick=()=>big.classList.remove('on');
+deal();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+</script></body></html>
